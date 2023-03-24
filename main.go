@@ -13,11 +13,25 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"runtime/pprof"
+	"time"
 
 	"golang.org/x/sync/errgroup"
 )
 
 func main() {
+	file, err := os.Create(fmt.Sprintf("cpu_%v.prof", time.Now().Unix()))
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	defer file.Close()
+	if err := pprof.StartCPUProfile(file); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	defer pprof.StopCPUProfile()
+
 	root := ""
 	flag.StringVar(&root, "root", os.ExpandEnv("$GOPATH"), "root")
 
